@@ -29,6 +29,34 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			final ImmutableList<LogEntry> log,
 			final Player mrX,
 			final List<Player> detectives) {
+
+			// Null conditions
+			// Checks if Mr X is null
+			if(mrX == null) throw new NullPointerException("MrX cannot be null!");
+
+			// Checks if Detectives is null
+			if(detectives == null) throw new NullPointerException(("Detectives list cannot be null!"));
+
+			// Check for any null detectives in the list
+			for(Player detective : detectives) {
+				if (detective == null) {
+					throw new NullPointerException("Detective in detective list cannot be null!");
+				}
+			}
+
+			// Check if there is no Mr X is not defined
+			if(!mrX.piece().isMrX()) throw new IllegalArgumentException("There has to be 1 Mr X player!");
+
+			// Check if there is more than one Mr X player
+			for (Player player : detectives) {
+				if(player.piece().isMrX()) {
+					throw new IllegalArgumentException("There must be no more  than 1 Mr X player!");
+				}
+			}
+
+			// Check if moves are empty
+			if(setup.moves.isEmpty()) throw new IllegalArgumentException("Moves is empty!");
+
 			this.setup = setup;
 			this.remaining = remaining;
 			this.log = log;
@@ -38,13 +66,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 
 
-		@Override public GameSetup getSetup() {  return null; }
+		@Override public GameSetup getSetup() {  return setup; }
 		@Override public ImmutableSet<Piece> getPlayers() { return null; }
-		@Override Optional<Integer> getDetectiveLocation(Detective detective) {return null;};
-		@Override Optional<TicketBoard> getPlayerTickets(Piece piece) { return null;}
-		@Override ImmutableList<LogEntry> getMrXTravelLog() { return null;}
-		@Override ImmutableSet<Piece> getWinner() { return null;}
-		@Override ImmutableSet<Move> getAvailableMoves() { return null;}
+		@Override public Optional<Integer> getDetectiveLocation(Detective detective) {return null;};
+		@Override public Optional<TicketBoard> getPlayerTickets(Piece piece) { return null;}
+		@Override public ImmutableList<LogEntry> getMrXTravelLog() { return log;}
+		@Override public ImmutableSet<Piece> getWinner() { return null;}
+		@Override public ImmutableSet<Move> getAvailableMoves() { return null;}
 
 		@Override public GameState advance(Move move) {  return null;  }
 	}
