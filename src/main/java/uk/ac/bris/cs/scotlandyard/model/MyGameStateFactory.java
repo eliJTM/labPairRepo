@@ -105,25 +105,42 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 		@Override public GameSetup getSetup() {  return setup; }
 
-		@Override public ImmutableSet<Piece> getPlayers() { return null; } // idk if it needs all players or just these
+		// Combines mrX and the list of detectives into a single immutable set
+		@Override public ImmutableSet<Piece> getPlayers() {
+			Set<Piece> pieces = new HashSet<>(); // Idk if it needs to be done like this, but i assume it cant be immutable
+			pieces.add(mrX.piece());
+			for( Player detective : detectives) {
+				pieces.add(detective.piece());
+			}
+			return ImmutableSet.copyOf(pieces);
+
+
+		}
 
 		// Uses logic from the implementation guide
 		@Override public Optional<Integer> getDetectiveLocation(Detective detective) {
-			for(Player curDetective: detectives) {
-				if( curDetective.piece().webColour().equals(detective.webColour())) { // This line seems real messy
-					return Optional.of(curDetective.location());
+			for(Player player: detectives) {
+				if( player.piece().webColour().equals(detective.webColour())) { // This line seems real messy
+					return Optional.of(player.location());
 				}
 			}
 			return  Optional.empty();
 		};
 
-		@Override public Optional<TicketBoard> getPlayerTickets(Piece piece) { return null;}
+		@Override public Optional<TicketBoard> getPlayerTickets(Piece piece) {
+			return null;
+		}
+
+
 		@Override public ImmutableList<LogEntry> getMrXTravelLog() { return log;}
 		@Override public ImmutableSet<Piece> getWinner() { return null;}
 		@Override public ImmutableSet<Move> getAvailableMoves() { return null;}
 
 		@Override public GameState advance(Move move) {  return null;  }
 	}
+
+
+
 	@Nonnull @Override public GameState build(
 			GameSetup setup,
 			Player mrX,
