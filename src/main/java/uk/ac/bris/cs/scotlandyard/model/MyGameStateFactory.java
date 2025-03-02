@@ -88,6 +88,10 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
             }
 
+			// Check that the Graph isn't empty
+			if(setup.graph.nodes().isEmpty()){
+				throw new IllegalArgumentException("graph is empty.");
+			}
 
 
 
