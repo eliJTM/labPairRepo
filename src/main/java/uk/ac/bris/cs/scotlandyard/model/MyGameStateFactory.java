@@ -58,9 +58,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			if(setup.moves.isEmpty()) throw new IllegalArgumentException("Moves is empty!");
 
 			// Check if any detectives have double tickets
+			// Check if any detectives have secret tickets
 			for( Player detective : detectives ) {
-				if (detective.has(Ticket.DOUBLE)) {
+				if (detective.has(Ticket.DOUBLE) ) {
 					throw new IllegalArgumentException("Detective has double ticket.");
+				}
+				else if (detective.has(Ticket.SECRET)) {
+					throw new IllegalArgumentException("Detective has secret ticket.");
 				}
 			}
 
