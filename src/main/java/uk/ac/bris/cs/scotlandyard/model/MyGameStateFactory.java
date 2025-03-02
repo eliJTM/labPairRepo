@@ -28,7 +28,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			final ImmutableSet<Piece> remaining,
 			final ImmutableList<LogEntry> log,
 			final Player mrX,
-			final List<Player> detectives) {
+			final List<Player> detectives ) {
 
 			// Null conditions
 			// Checks if Mr X is null
