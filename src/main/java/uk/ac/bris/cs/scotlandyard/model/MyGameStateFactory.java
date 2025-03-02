@@ -94,7 +94,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			}
 
 
-
 			this.setup = setup;
 			this.remaining = remaining;
 			this.log = log;
@@ -105,8 +104,19 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 
 		@Override public GameSetup getSetup() {  return setup; }
-		@Override public ImmutableSet<Piece> getPlayers() { return null; }
-		@Override public Optional<Integer> getDetectiveLocation(Detective detective) {return null;};
+
+		@Override public ImmutableSet<Piece> getPlayers() { return null; } // idk if it needs all players or just these
+
+		// Uses logic from the implementation guide
+		@Override public Optional<Integer> getDetectiveLocation(Detective detective) {
+			for(Player curDetective: detectives) {
+				if( curDetective.piece().webColour().equals(detective.webColour())) { // This line seems real messy
+					return Optional.of(curDetective.location());
+				}
+			}
+			return  Optional.empty();
+		};
+
 		@Override public Optional<TicketBoard> getPlayerTickets(Piece piece) { return null;}
 		@Override public ImmutableList<LogEntry> getMrXTravelLog() { return log;}
 		@Override public ImmutableSet<Piece> getWinner() { return null;}
