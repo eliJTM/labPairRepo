@@ -79,6 +79,18 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 			}
 
+			// Check for duplicate detective locations
+			// Similar logic to above (duplicate detectives)
+			Set<Integer> detectiveLocations = new HashSet<>();
+			for( Player detective : detectives ) {
+                if( !detectiveLocations.add(detective.location()) ) {
+					throw new IllegalArgumentException("There are overlapping detectives.");
+				}
+            }
+
+
+
+
 			this.setup = setup;
 			this.remaining = remaining;
 			this.log = log;
