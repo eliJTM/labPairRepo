@@ -57,6 +57,24 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			// Check if moves are empty
 			if(setup.moves.isEmpty()) throw new IllegalArgumentException("Moves is empty!");
 
+			// Check if any detectives have double tickets
+			for( Player detective : detectives ) {
+				if (detective.has(Ticket.DOUBLE)) {
+					throw new IllegalArgumentException("Detective has double ticket.");
+				}
+			}
+
+			// Check for duplicate detectives
+			// Atm this literally compares the entire detective - idk if it should just be checking piece colour?
+			// Creates a set as sets can't contain duplicates
+			// -- Does mean there's an extra set knocking around
+			Set<Player> players = new HashSet<>();
+			for( Player detective : detectives ) {
+                if(  !players.add(detective) ) { 	// .add returns false if value already exists
+					throw new IllegalArgumentException("There are duplicate detectives.");
+				}
+			}
+
 			this.setup = setup;
 			this.remaining = remaining;
 			this.log = log;
