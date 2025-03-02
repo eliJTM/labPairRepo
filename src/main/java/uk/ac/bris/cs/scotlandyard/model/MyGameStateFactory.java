@@ -1,11 +1,11 @@
 package uk.ac.bris.cs.scotlandyard.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.*;
 import javax.annotation.Nonnull;
 import uk.ac.bris.cs.scotlandyard.model.Board.GameState;
-import uk.ac.bris.cs.scotlandyard.model.Move.*;
 import uk.ac.bris.cs.scotlandyard.model.Piece.*;
 import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.*;
 
@@ -119,7 +119,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 		// Uses logic from the implementation guide
 		@Override public Optional<Integer> getDetectiveLocation(Detective detective) {
-			for(Player player: detectives) {
+			for( Player player : detectives ) {
 				if( player.piece().webColour().equals(detective.webColour())) { // This line seems real messy
 					return Optional.of(player.location());
 				}
@@ -127,13 +127,55 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return  Optional.empty();
 		};
 
+
+		// Class to implement TicketBoard interface - Used in getPlayerTickets
+		private class GameStateTicketBoard implements TicketBoard {
+			private final ImmutableMap<Ticket, Integer> tickets;
+
+			// Constructor just stores a pieces tickets
+			private GameStateTicketBoard(ImmutableMap<Ticket, Integer> tickets) {
+				this.tickets = tickets;
+			}
+
+			// Returns the associated number of tickets
+			@Override
+			public int getCount(@Nonnull Ticket ticket) {
+				return tickets.get(ticket);
+			}
+		}
+
+		// Returns an object that stores a players a tickets to be read
 		@Override public Optional<TicketBoard> getPlayerTickets(Piece piece) {
-			return null;
+
+			// Passes Mrx's tickets through
+			if( piece.isMrX() ) {
+				// Initialises MrX Game State TicketBoard
+				TicketBoard MrXGSTicketBoard = new GameStateTicketBoard(mrX.tickets());
+                return Optional.ofNullable(MrXGSTicketBoard);
+			}
+			// Iterates through detectives to find a match
+			else if (piece.isDetective()) {
+				for( Player player : detectives ) {
+					if( player.piece().equals(piece)) {
+						// Initialises Detectives Game State TicketBoard
+						TicketBoard DetGSTicketBoard = new GameStateTicketBoard(player.tickets());
+						return Optional.ofNullable(DetGSTicketBoard);
+					}
+					else return null;
+				}
+			}
+			return null; // One of these final 2 return statements probably isn't necessary, but intellij has a spasm otherwise
 		}
 
 
+
+
+
+
 		@Override public ImmutableList<LogEntry> getMrXTravelLog() { return log;}
+
 		@Override public ImmutableSet<Piece> getWinner() { return null;}
+
 		@Override public ImmutableSet<Move> getAvailableMoves() { return null;}
 
 		@Override public GameState advance(Move move) {  return null;  }
