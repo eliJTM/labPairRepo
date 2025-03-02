@@ -151,7 +151,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			if( piece.isMrX() ) {
 				// Initialises MrX Game State TicketBoard
 				TicketBoard MrXGSTicketBoard = new GameStateTicketBoard(mrX.tickets());
-                return Optional.ofNullable(MrXGSTicketBoard);
+                return Optional.of(MrXGSTicketBoard);
 			}
 			// Iterates through detectives to find a match
 			else if (piece.isDetective()) {
@@ -159,14 +159,12 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					if( player.piece().equals(piece)) {
 						// Initialises Detectives Game State TicketBoard
 						TicketBoard DetGSTicketBoard = new GameStateTicketBoard(player.tickets());
-						return Optional.ofNullable(DetGSTicketBoard);
+						return Optional.of(DetGSTicketBoard);
 					}
-					else return null;
 				}
 			}
-			return null; // One of these final 2 return statements probably isn't necessary, but intellij has a spasm otherwise
+			return Optional.empty(); // One of these final 2 return statements probably isn't necessary, but intellij has a spasm otherwise
 		}
-
 
 
 
