@@ -5,6 +5,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.*;
 import javax.annotation.Nonnull;
+import javax.crypto.spec.PSource;
+
+import com.google.errorprone.annotations.Immutable;
+import uk.ac.bris.cs.scotlandyard.model.Move.SingleMove;
+import uk.ac.bris.cs.scotlandyard.model.Move.DoubleMove;
 import uk.ac.bris.cs.scotlandyard.model.Board.GameState;
 import uk.ac.bris.cs.scotlandyard.model.Piece.*;
 import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.*;
@@ -31,6 +36,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			final List<Player> detectives ) {
 
 			// Null conditions
+
 			// Checks if Mr X is null
 			if(mrX == null) throw new NullPointerException("MrX cannot be null!");
 
@@ -90,18 +96,15 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 			// Check that the Graph isn't empty
 			if(setup.graph.nodes().isEmpty()){
-				throw new IllegalArgumentException("graph is empty.");
+				throw new IllegalArgumentException("Graph is empty.");
 			}
-
 
 			this.setup = setup;
 			this.remaining = remaining;
 			this.log = log;
 			this.mrX = mrX;
 			this.detectives = detectives;
-		};
-
-
+		}
 
 		@Override public GameSetup getSetup() {  return setup; }
 
@@ -113,8 +116,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				pieces.add(detective.piece());
 			}
 			return ImmutableSet.copyOf(pieces);
-
-
 		}
 
 		// Uses logic from the implementation guide
@@ -172,12 +173,125 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 		@Override public ImmutableList<LogEntry> getMrXTravelLog() { return log;}
 
-		@Override public ImmutableSet<Piece> getWinner() { return null;}
+		@Override public ImmutableSet<Piece> getWinner() { return null; }
 
-		@Override public ImmutableSet<Move> getAvailableMoves() { return null;}
+		@Override public ImmutableSet<Move> getAvailableMoves() {
 
-		@Override public GameState advance(Move move) {  return null;  }
+
+			Set<Move> availableMoves = new HashSet<>();
+
+			// Check for any remaining peices, then no moves are available
+			if (!remaining.isEmpty()) {
+				// Create a new piece used to determine the current player
+				Piece currentPlayer = remaining.iterator().next();
+
+				if (currentPlayer.isMrX()) {
+					// Generate all single moves for MrX
+					Set<SingleMove> singleMoves = makeSingleMoves(setup, detectives, mrX, mrX.location());
+					availableMoves.addAll(singleMoves);
+
+					// Generate all double moves for MrX
+					if (setup.moves.size() - log.size() >= 2) { // Checks if there are atleast 2 moves of the game left
+						Set<DoubleMove> doubleMoves = makeDoubleMoves(setup, detectives, mrX, mrX.location());
+						availableMoves.addAll(doubleMoves);
+					}
+				} else {
+					// Get current player's turn
+					for (Player detective : detectives) {
+						if (detective.piece().equals(currentPlayer)) {
+							// Generate all single moves for the detective
+							Set<SingleMove> detectiveMoves = makeSingleMoves(setup, detectives, detective, detective.location());
+							availableMoves.addAll(detectiveMoves);
+							break;
+						}
+					}
+				}
+			}
+
+			// If no moves are available for the current player, all players get to move again
+			if (availableMoves.isEmpty()) {
+				for (Player detective : detectives) {
+					Set<SingleMove> detectiveMoves = makeSingleMoves(setup, detectives, detective, detective.location());
+					availableMoves.addAll(detectiveMoves);
+				}
+			}
+
+			// Store the calculated moves and return an immutable copy
+			moves = ImmutableSet.copyOf(availableMoves);
+			return moves;
+		}
+		private static Set<SingleMove> makeSingleMoves(GameSetup setup, List<Player> detectives, Player player, int source){
+
+			// TODO create an empty collection of some sort, say, HashSet, to store all the SingleMove we generate
+			Set<SingleMove> moves = new HashSet<>();
+
+			for(int destination : setup.graph.adjacentNodes(source)) {
+				// TODO find out if destination is occupied by a detective
+				//  if the location is occupied, don't add to the collection of moves to return
+
+				boolean occupied = false;
+
+				for(Player detective : detectives) {
+					if (detective.location() == destination) {
+						occupied = true;
+						break;
+					}
+				}
+
+				if(occupied) { continue; }
+
+				for(Transport t : setup.graph.edgeValueOrDefault(source, destination, ImmutableSet.of()) ) {
+					// TODO find out if the player has the required tickets
+					//  if it does, construct a SingleMove and add it the collection of moves to return
+					if (player.tickets().get(t.requiredTicket()) != 0) {
+						moves.add( new SingleMove(player.piece(), source, t.requiredTicket(), destination));
+					}
+				}
+
+				// TODO consider the rules of secret moves here
+				if (player.tickets().get(Ticket.SECRET) != 0) {
+					moves.add( new SingleMove(player.piece(), source, Ticket.SECRET, destination));
+				}
+			}
+			// TODO return the collection of moves
+			return moves;
+		}
+
+		private Set<DoubleMove> makeDoubleMoves(GameSetup setup, List<Player> detectives, Player player, int source) {
+			// Checks if player has double move ticket
+			if (player.tickets().get(Ticket.DOUBLE) == 0) return Collections.emptySet();
+
+			// Create collection for double moves
+			Set<DoubleMove> doubleMoves = new HashSet<>();
+			Set<SingleMove> firstMoves = makeSingleMoves(setup, detectives, player, source);
+
+			for (SingleMove firstMove : firstMoves) {
+				// Used to simulate player's move after using a ticket
+				Player playerAfterFirstMove = player.use(firstMove.ticket);
+
+				// Get valid second moves from the destination of the first move
+				Set<SingleMove> secondMoves = makeSingleMoves(setup, detectives, playerAfterFirstMove, firstMove.destination);
+
+				// Generates collection of all valid double moves
+				for (SingleMove secondMove : secondMoves) {
+					doubleMoves.add(new DoubleMove(player.piece(), source, firstMove.ticket, firstMove.destination, secondMove.ticket, secondMove.destination
+					));
+				}
+			}
+
+			return doubleMoves;
+		}
+
+
+		@Override public GameState advance(Move move) {
+			// check if given move is valid
+			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
+
+			// TODO use Visitor pattern for defining the different behaviours or something like that
+			return null;
+		}
 	}
+
 
 
 
