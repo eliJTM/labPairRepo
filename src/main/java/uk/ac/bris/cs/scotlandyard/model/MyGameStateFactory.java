@@ -164,12 +164,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					}
 				}
 			}
-			return Optional.empty(); // One of these final 2 return statements probably isn't necessary, but intellij has a spasm otherwise
+			return Optional.empty();
 		}
-
-
-
-
 
 		@Override public ImmutableList<LogEntry> getMrXTravelLog() { return log;}
 
@@ -180,7 +176,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 			Set<Move> availableMoves = new HashSet<>();
 
-			// Check for any remaining peices, then no moves are available
+
+
+			// Check for any remaining pieces, then no moves are available
 			if (!remaining.isEmpty()) {
 				// Create a new piece used to determine the current player
 				Piece currentPlayer = remaining.iterator().next();
@@ -285,6 +283,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 		@Override public GameState advance(Move move) {
 			// check if given move is valid
+			moves = getAvailableMoves();
 			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
 
 			// TODO use Visitor pattern for defining the different behaviours or something like that
