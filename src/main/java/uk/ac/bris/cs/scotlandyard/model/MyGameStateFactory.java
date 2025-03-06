@@ -43,61 +43,40 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			// Checks if Detectives is null
 			if(detectives == null) throw new NullPointerException(("Detectives list cannot be null!"));
 
-			// Check for any null detectives in the list
+			// Sets used to find duplicates
+			Set<Player> players = new HashSet<>();
+			Set<Integer> detectiveLocations = new HashSet<>();
+
+			// All tests that check each detective
 			for(Player detective : detectives) {
-				if (detective == null) {
-					throw new NullPointerException("Detective in detective list cannot be null!");
-				}
+
+				// Check for any null detectives in the list
+				if (detective == null) throw new NullPointerException("Detective in detective list cannot be null!");
+
+				// Check if there is more than one Mr X player
+				if(detective.piece().isMrX()) throw new IllegalArgumentException("There must be no more  than 1 Mr X player!");
+
+				// Check if any detectives have double tickets
+				if (detective.has(Ticket.DOUBLE) ) throw new IllegalArgumentException("Detective has double ticket.");
+
+				// Check if any detectives have secret tickets
+				if (detective.has(Ticket.SECRET)) throw new IllegalArgumentException("Detective has secret ticket.");
+
+				// Check for duplicate detectives - .add returns false if value already exists
+				if(!players.add(detective)) throw new IllegalArgumentException("There are duplicate detectives.");
+
+				// Check for duplicate detective locations - uses similar logic to above (duplicate detectives)
+				if(!detectiveLocations.add(detective.location())) throw new IllegalArgumentException("There are overlapping detectives.");
 			}
 
-			// Check if there is no Mr X is not defined
+			// Check if there is no Mr X / is not defined
 			if(!mrX.piece().isMrX()) throw new IllegalArgumentException("There has to be 1 Mr X player!");
-
-			// Check if there is more than one Mr X player
-			for (Player player : detectives) {
-				if(player.piece().isMrX()) {
-					throw new IllegalArgumentException("There must be no more  than 1 Mr X player!");
-				}
-			}
 
 			// Check if moves are empty
 			if(setup.moves.isEmpty()) throw new IllegalArgumentException("Moves is empty!");
 
-			// Check if any detectives have double tickets
-			// Check if any detectives have secret tickets
-			for( Player detective : detectives ) {
-				if (detective.has(Ticket.DOUBLE) ) {
-					throw new IllegalArgumentException("Detective has double ticket.");
-				}
-				else if (detective.has(Ticket.SECRET)) {
-					throw new IllegalArgumentException("Detective has secret ticket.");
-				}
-			}
-
-			// Check for duplicate detectives
-			// Atm this literally compares the entire detective - idk if it should just be checking piece colour?
-			// Creates a set as sets can't contain duplicates
-			// -- Does mean there's an extra set knocking around
-			Set<Player> players = new HashSet<>();
-			for( Player detective : detectives ) {
-                if(  !players.add(detective) ) { 	// .add returns false if value already exists
-					throw new IllegalArgumentException("There are duplicate detectives.");
-				}
-			}
-
-			// Check for duplicate detective locations
-			// Similar logic to above (duplicate detectives)
-			Set<Integer> detectiveLocations = new HashSet<>();
-			for( Player detective : detectives ) {
-                if( !detectiveLocations.add(detective.location()) ) {
-					throw new IllegalArgumentException("There are overlapping detectives.");
-				}
-            }
-
 			// Check that the Graph isn't empty
-			if(setup.graph.nodes().isEmpty()){
-				throw new IllegalArgumentException("Graph is empty.");
-			}
+			if(setup.graph.nodes().isEmpty()) throw new IllegalArgumentException("Graph is empty.");
 
 			this.setup = setup;
 			this.remaining = remaining;
@@ -127,7 +106,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			}
 			return  Optional.empty();
 		};
-
 
 		// Class to implement TicketBoard interface - Used in getPlayerTickets
 		private class GameStateTicketBoard implements TicketBoard {
@@ -164,6 +142,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					}
 				}
 			}
+			// Returns an empty ticket board for players that don't exist
 			return Optional.empty();
 		}
 
@@ -218,6 +197,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			moves = ImmutableSet.copyOf(availableMoves);
 			return moves;
 		}
+
 		private static Set<SingleMove> makeSingleMoves(GameSetup setup, List<Player> detectives, Player player, int source){
 
 			// TODO create an empty collection of some sort, say, HashSet, to store all the SingleMove we generate
@@ -279,7 +259,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 			return doubleMoves;
 		}
-
 
 		@Override public GameState advance(Move move) {
 			// check if given move is valid
