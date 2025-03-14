@@ -204,41 +204,34 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 		private static HashSet<SingleMove> makeSingleMoves(GameSetup setup, List<Player> detectives, Player player, int source) {
-
-			// TODO create an empty collection of some sort, say, HashSet, to store all the SingleMove we generate
+			// Collection to store all possible single moves
 			HashSet<SingleMove> moves = new HashSet<>();
 
 			for (int destination : setup.graph.adjacentNodes(source)) {
-				// TODO find out if destination is occupied by a detective
-				//  if the location is occupied, don't add to the collection of moves to return
-
+				// Checks if destination is occupied by a detective
 				boolean occupied = false;
 
 				for (Player detective : detectives) {
-					if (detective.location() == destination) {
+					if (detective.location() == destination) { //  If the location is occupied, don't add to the collection of moves to return
 						occupied = true;
 						break;
 					}
 				}
 
-				if (occupied) {
-					continue;
-				}
+				if (occupied) {continue;}
 
 				for (Transport t : setup.graph.edgeValueOrDefault(source, destination, ImmutableSet.of())) {
-					// TODO find out if the player has the required tickets
-					//  if it does, construct a SingleMove and add it the collection of moves to return
+					// Check if player has required ticket
 					if (player.tickets().get(t.requiredTicket()) != 0) {
-						moves.add(new SingleMove(player.piece(), source, t.requiredTicket(), destination));
+						moves.add(new SingleMove(player.piece(), source, t.requiredTicket(), destination)); // Constructs a single move
 					}
 				}
 
-				// TODO consider the rules of secret moves here
+				// Checks if player has the required secret ticket
 				if (player.tickets().get(Ticket.SECRET) != 0) {
-					moves.add(new SingleMove(player.piece(), source, Ticket.SECRET, destination));
+					moves.add(new SingleMove(player.piece(), source, Ticket.SECRET, destination)); // Constructs a single move
 				}
 			}
-			// TODO return the collection of moves
 			return moves;
 		}
 
@@ -308,7 +301,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 							detectivePieces.add(detective.piece());
 						}
 						updatedRemaining = ImmutableSet.copyOf(detectivePieces);
-					} else {
+					}
+
+					else {
 						// Update detective's position and tickets
 						for (int i = 0; i < detectives.size(); i++) {
 							Player detective = detectives.get(i);
