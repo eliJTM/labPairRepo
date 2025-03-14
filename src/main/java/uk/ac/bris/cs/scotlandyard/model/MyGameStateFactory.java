@@ -166,7 +166,15 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 		@Override
-		public ImmutableSet<Piece> getWinner() { return null;
+		public ImmutableSet<Piece> getWinner() {
+			// detective win:
+			// when player's move is on MrX
+			// when MrX has no avilable moves
+
+			// MrX win:
+			// MrX fills log
+			// Detective can no longer move any of its pieces
+			return null;
 		}
 
 		@Override
@@ -349,9 +357,10 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					logBuilder.addAll(log);
 
 					// First move log entry
-					boolean shouldReveal = setup.moves.size() > log.size() && setup.moves.get(log.size());
+					boolean shouldReveal1 = setup.moves.size() > log.size() && setup.moves.get(log.size()),
+							shouldReveal2 = setup.moves.size() > log.size() + 1 && setup.moves.get(log.size() + 1);
 					LogEntry firstLogEntry;
-					if (shouldReveal) {
+					if (shouldReveal1) {
 						firstLogEntry = LogEntry.reveal(move.ticket1, move.destination1);
 					} else {
 						firstLogEntry = LogEntry.hidden(move.ticket1);
@@ -360,7 +369,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 					// Second move log entry
 					LogEntry secondLogEntry;
-					if (shouldReveal) {
+					if (shouldReveal2) {
 						secondLogEntry = LogEntry.reveal(move.ticket2, move.destination2);
 					} else {
 						secondLogEntry = LogEntry.hidden(move.ticket2);
