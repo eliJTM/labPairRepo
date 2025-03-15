@@ -5,12 +5,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.*;
 import javax.annotation.Nonnull;
-import javax.crypto.spec.PSource;
 
-import com.google.errorprone.annotations.Immutable;
 import uk.ac.bris.cs.scotlandyard.model.Move.SingleMove;
 import uk.ac.bris.cs.scotlandyard.model.Move.DoubleMove;
-import uk.ac.bris.cs.scotlandyard.model.Move.Visitor;
 import uk.ac.bris.cs.scotlandyard.model.Board.GameState;
 import uk.ac.bris.cs.scotlandyard.model.Piece.*;
 import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.*;
@@ -167,22 +164,31 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 		@Override
 		public ImmutableSet<Piece> getWinner() {
+			Set<Piece> winners = new HashSet<Piece>();
 			// detective win:
 			// when player's move is on MrX
-			// when MrX has no avilable moves
+			for (Player detective: detectives){
+				if (detective.location() == mrX.location()){
+					for (Player player : detectives){
+						winners.add(player.piece());
+					}
+				}
+			}
+			// when MrX has no available moves
 
 			// MrX win:
 			// MrX fills log
 			// Detective can no longer move any of its pieces
-			return null;
+
+			return ImmutableSet.copyOf(winners);
 		}
 
 		@Override
 		public ImmutableSet<Move> getAvailableMoves() {
 			Set<Move> availableMoves = new HashSet<>();
 
-			// Check if there are remaining pieces to move
-			if (!remaining.isEmpty()) {
+			// Check if there are remaining pieces to move & if the game is over yet
+			if (!remaining.isEmpty() && getWinner().isEmpty()) {
 				// Current player is the first in the remaining set
 				Piece currentPlayer = remaining.iterator().next();
 
