@@ -88,6 +88,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.log = log;
 			this.mrX = mrX;
 			this.detectives = detectives;
+			this.winner = getWinner();
 		}
 
 		@Override
@@ -189,12 +190,15 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 			// MrX win:
 			// MrX fills log
+			// if log is full and it is mrx's go
 			if (setup.moves.size() == (log.size()) && remaining.iterator().next().isMrX()) {
 				winners.add(mrX.piece());
 			}
 
 			// Detective can no longer move any of its pieces
-
+			if (makeDetectiveMoves(setup, detectives, remaining).isEmpty() && remaining.iterator().next().isDetective()) {
+				winners.add(mrX.piece());
+			}
 
 			return ImmutableSet.copyOf(winners);
 		}
