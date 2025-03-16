@@ -169,6 +169,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Override
 		public ImmutableSet<Piece> getWinner() {
 			Set<Piece> winners = new HashSet<Piece>();
+
 			// detective win:
 			// when player's move is on MrX
 			for (Player detective: detectives){
@@ -179,10 +180,21 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 			}
 			// when MrX has no available moves
+			// if mrx has no available moves on his go
+			if (makeMrXMoves(setup, detectives, mrX, log).isEmpty() && remaining.iterator().next().isMrX()) {
+				for (Player player : detectives) {
+					winners.add(player.piece());
+				}
+			}
 
 			// MrX win:
 			// MrX fills log
+			if (setup.moves.size() == (log.size()) && remaining.iterator().next().isMrX()) {
+				winners.add(mrX.piece());
+			}
+
 			// Detective can no longer move any of its pieces
+
 
 			return ImmutableSet.copyOf(winners);
 		}
@@ -197,26 +209,14 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				Piece currentPlayer = remaining.iterator().next();
 
 				if (currentPlayer.isMrX()) {
-					availableMoves.addAll(makeMrXMoves(setup, detectives, mrX,log));
-//					// Generate all single moves for MrX
-//					Set<SingleMove> singleMoves = makeSingleMoves(setup, detectives, mrX, mrX.location());
-//					availableMoves.addAll(singleMoves);
-//
-//					// Generate all double moves for MrX and checks least 2 moves left in the game
-//					if (setup.moves.size() - log.size() >= 2 && mrX.has(Ticket.DOUBLE)) {
-//						Set<DoubleMove> doubleMoves = makeDoubleMoves(setup, detectives, mrX, mrX.location());
-//						availableMoves.addAll(doubleMoves);
-//					}
-				} else {
-					// Find the detective whose turn it is
-					for (Player detective : detectives) {
-						if (remaining.contains(detective.piece())) {
-							// Generate all single moves for the detective
-							Set<SingleMove> detectiveMoves = makeSingleMoves(setup, detectives, detective, detective.location());
-							availableMoves.addAll(detectiveMoves);
-						}
-					}
+
+					availableMoves.addAll(makeMrXMoves(setup, detectives, mrX, log));
 				}
+				else {
+
+					availableMoves.addAll(makeDetectiveMoves(setup, detectives, remaining));
+				}
+
 			}
 
 			return ImmutableSet.copyOf(availableMoves);
@@ -282,6 +282,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		private static Set<Move> makeMrXMoves(GameSetup setup, List<Player> detectives, Player mrX, ImmutableList<LogEntry> log) {
 			Set<Move> availableMoves = new HashSet<>();
 
+			// Generate all single moves for MrX
 			Set<SingleMove> singleMoves = makeSingleMoves(setup, detectives, mrX, mrX.location());
 			availableMoves.addAll(singleMoves);
 
@@ -293,7 +294,20 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return availableMoves;
 		}
 
+		private static Set<Move> makeDetectiveMoves(GameSetup setup, List<Player> detectives, ImmutableSet<Piece> remaining) {
+			Set<Move> availableMoves = new HashSet<>();
 
+			// Generate moves for all detectives in remaining
+			for (Player detective : detectives) {
+				if (remaining.contains(detective.piece())) {
+					// Generate all single moves for the detective
+					Set<SingleMove> detectiveMoves = makeSingleMoves(setup, detectives, detective, detective.location());
+					availableMoves.addAll(detectiveMoves);
+				}
+			}
+
+			return availableMoves;
+		}
 
 
 		@Override
