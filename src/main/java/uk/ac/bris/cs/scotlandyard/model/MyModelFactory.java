@@ -41,12 +41,16 @@ public final class MyModelFactory implements Factory<Model> {
 		@Override
 		public void registerObserver(Observer observer) {
 			if(observer == null) throw new NullPointerException("Observer can not be null!");
+			if(observers.contains(observer)) throw new IllegalArgumentException("Can not register same observer twice!");
+
 			observers.add(observer);
 		}
 
 		@Override
 		public void unregisterObserver(Observer observer) {
 			if(observer == null) throw new NullPointerException("Observer can not be null!");
+			if(!observers.contains(observer)) throw new IllegalArgumentException("Can not remove invalid observer!");
+
 			observers.remove(observer);
 		}
 
