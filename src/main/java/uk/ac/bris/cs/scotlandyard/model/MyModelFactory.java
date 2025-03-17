@@ -20,8 +20,11 @@ public final class MyModelFactory implements Factory<Model> {
 	@Nonnull @Override public Model build(GameSetup setup,
 										  Player mrX,
 										  ImmutableList<Player> detectives) {
-		// TODO
-		return new MyModel(null);}
+
+		MyGameStateFactory factory = new MyGameStateFactory();
+		GameState state = factory.build(setup, mrX, detectives);
+		return new MyModel(state);
+	}
 	private final class MyModel implements Model {
 		private GameState state;
 		private Set<Observer> observers;
@@ -49,7 +52,7 @@ public final class MyModelFactory implements Factory<Model> {
 		@Override
 		public void unregisterObserver(Observer observer) {
 			if(observer == null) throw new NullPointerException("Observer can not be null!");
-			if(!observers.contains(observer)) throw new IllegalArgumentException("Can not remove invalid observer!");
+			if(!observers.contains(observer)) throw new IllegalArgumentException("Invalid observer!");
 
 			observers.remove(observer);
 		}
@@ -62,6 +65,20 @@ public final class MyModelFactory implements Factory<Model> {
 
 		@Override
 		public void chooseMove(Move move) {
+			if (move == null) throw new NullPointerException("Move can not be null!");
+			Observer.Event  event;
+			GameState newState = state.advance(move);
+
+			if (newState.getWinner().isEmpty()) {
+				 event = Observer.Event.MOVE_MADE;
+			}
+			else {
+				 event = Observer.Event.GAME_OVER;
+			}
+
+			for(Observer observer : observers) {
+				observer.onModelChanged(newState, event);
+			}
 
 		}
 	}
