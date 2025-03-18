@@ -88,7 +88,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.log = log;
 			this.mrX = mrX;
 			this.detectives = detectives;
-			//this.winner = getWinner();
+			this.winner = getWinner();
 		}
 
 		@Override
@@ -171,12 +171,12 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		public ImmutableSet<Piece> getWinner() {
 			Set<Piece> winners = new HashSet<Piece>();
 
-			/*
-			// Detective can no longer move any of its pieces
-			if (makeDetectiveMoves(setup, detectives, remaining).isEmpty() && remaining.iterator().next().isDetective()) {
-				winners.add(mrX.piece());
-			}
-			 */
+			// Odd edge cases
+
+
+
+
+
 
 			// When detective is on MrX
 			for (Player detective: detectives){
@@ -194,43 +194,27 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				detectiveTickets += detective.tickets().get(Ticket.BUS);
 				detectiveTickets += detective.tickets().get(Ticket.UNDERGROUND);
 			}
-			if ( (detectiveTickets == 0)) {
+			if ( (detectiveTickets == 0) ) {
 				winners.add(mrX.piece());
 			}
 
-
-
 			// Checks that occur on MrX's Go
 			if(remaining.iterator().next().isMrX()) {
+				// if log is full and it is MrX's go
+				if (setup.moves.size() == (log.size()) ) {
+					winners.add(mrX.piece());
+				}
 
-				// if mrx has no available moves on his go (is surrounded)
+				// If MrX has no available moves on his go (is surrounded)
 				if (makeMrXMoves(setup, detectives, mrX, log).isEmpty() ) {
 					for (Player player : detectives) {
 						winners.add(player.piece());
 					}
 				}
-
-				// if log is full and it is mrx's go
-				if (setup.moves.size() == (log.size()) ) {
-					winners.add(mrX.piece());
-				}
 			}
 
-			// Checks that occur on 1st detective's go
-			// (make detective moves only makes moves for remaining detectives,
-			// so only makes full picture when called on 1st detective after mrX
-			if ((remaining.size() == detectives.size()) && remaining.iterator().next().isDetective()) {
-
-				if (makeDetectiveMoves(setup, detectives, remaining).isEmpty() && !makeMrXMoves(setup, detectives, mrX, log).isEmpty()) {
-					winners.add(mrX.piece());
-				}
-
-			}
-
-
-
-
-			return ImmutableSet.copyOf(winners);
+			winner = ImmutableSet.copyOf(winners);
+			return winner;
 		}
 
 		@Override
@@ -238,7 +222,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			Set<Move> availableMoves = new HashSet<>();
 
 			// Check if there are remaining pieces to move & if the game is over yet
-			if (!remaining.isEmpty() && getWinner().isEmpty()) {
+			if (!remaining.isEmpty() && winner.isEmpty()) {
 				// Current player is the first in the remaining set
 				Piece currentPlayer = remaining.iterator().next();
 
@@ -343,7 +327,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return availableMoves;
 		}
 
-
 		@Override
 		public GameState advance(Move move) {
 			// Check for invalid move
@@ -416,6 +399,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 						}
 					}
 
+					getWinner();
+
 					// Return the new game state
 					return new MyGameState(setup, updatedRemaining, updatedLog, updatedMrX, updatedDetectives);
 				}
@@ -460,6 +445,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 						detectivePieces.add(detective.piece());
 					}
 					ImmutableSet<Piece> updatedRemaining = ImmutableSet.copyOf(detectivePieces);
+
+					getWinner();
+
 					// Return the new game state
 					return new MyGameState(setup, updatedRemaining, updatedLog, updatedMrX, detectives);
 				}
