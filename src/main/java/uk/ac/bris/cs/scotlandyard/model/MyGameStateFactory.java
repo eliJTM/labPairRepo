@@ -88,7 +88,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.log = log;
 			this.mrX = mrX;
 			this.detectives = detectives;
-			this.winner = getWinner();
+			//this.winner = getWinner();
 		}
 
 		@Override
@@ -171,8 +171,14 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		public ImmutableSet<Piece> getWinner() {
 			Set<Piece> winners = new HashSet<Piece>();
 
-			// detective win:
-			// when player's move is on MrX
+			/*
+			// Detective can no longer move any of its pieces
+			if (makeDetectiveMoves(setup, detectives, remaining).isEmpty() && remaining.iterator().next().isDetective()) {
+				winners.add(mrX.piece());
+			}
+			 */
+
+			// When detective is on MrX
 			for (Player detective: detectives){
 				if (detective.location() == mrX.location()){
 					for (Player player : detectives){
@@ -180,25 +186,49 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					}
 				}
 			}
-			// when MrX has no available moves
-			// if mrx has no available moves on his go
-			if (makeMrXMoves(setup, detectives, mrX, log).isEmpty() && remaining.iterator().next().isMrX()) {
-				for (Player player : detectives) {
-					winners.add(player.piece());
+
+			// When detectives run out of tickets
+			int detectiveTickets = 0;
+			for (Player detective : detectives) {
+				detectiveTickets += detective.tickets().get(Ticket.TAXI);
+				detectiveTickets += detective.tickets().get(Ticket.BUS);
+				detectiveTickets += detective.tickets().get(Ticket.UNDERGROUND);
+			}
+			if ( (detectiveTickets == 0)) {
+				winners.add(mrX.piece());
+			}
+
+
+
+			// Checks that occur on MrX's Go
+			if(remaining.iterator().next().isMrX()) {
+
+				// if mrx has no available moves on his go (is surrounded)
+				if (makeMrXMoves(setup, detectives, mrX, log).isEmpty() ) {
+					for (Player player : detectives) {
+						winners.add(player.piece());
+					}
+				}
+
+				// if log is full and it is mrx's go
+				if (setup.moves.size() == (log.size()) ) {
+					winners.add(mrX.piece());
 				}
 			}
 
-			// MrX win:
-			// MrX fills log
-			// if log is full and it is mrx's go
-			if (setup.moves.size() == (log.size()) && remaining.iterator().next().isMrX()) {
-				winners.add(mrX.piece());
+			// Checks that occur on 1st detective's go
+			// (make detective moves only makes moves for remaining detectives,
+			// so only makes full picture when called on 1st detective after mrX
+			if ((remaining.size() == detectives.size()) && remaining.iterator().next().isDetective()) {
+
+				if (makeDetectiveMoves(setup, detectives, remaining).isEmpty() && !makeMrXMoves(setup, detectives, mrX, log).isEmpty()) {
+					winners.add(mrX.piece());
+				}
+
 			}
 
-			// Detective can no longer move any of its pieces
-			if (makeDetectiveMoves(setup, detectives, remaining).isEmpty() && remaining.iterator().next().isDetective()) {
-				winners.add(mrX.piece());
-			}
+
+
 
 			return ImmutableSet.copyOf(winners);
 		}
