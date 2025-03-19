@@ -379,9 +379,21 @@ public final class MyGameStateFactory implements Factory<GameState> {
 						}
 
 						// Remove the detective from the remaining set
+						// Also ensures only detectives with tickets are added
 						Set<Piece> newRemaining = new HashSet<>();
 						for (Piece piece : remaining) {
-							if (!piece.equals(move.commencedBy())) {
+
+							// Counts the number of tickets of the current piece
+							int pieceTickets = 0;
+							for (Player detective : detectives) {
+								if (detective.piece().equals(piece)) {
+									pieceTickets += detective.tickets().get(Ticket.TAXI);
+									pieceTickets += detective.tickets().get(Ticket.BUS);
+									pieceTickets += detective.tickets().get(Ticket.UNDERGROUND);
+								}
+							}
+
+							if (!piece.equals(move.commencedBy()) && ( pieceTickets > 0 )) {
 								newRemaining.add(piece);
 							}
 						}
