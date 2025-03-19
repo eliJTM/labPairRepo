@@ -25,7 +25,7 @@ public final class MyModelFactory implements Factory<Model> {
 		GameState state = factory.build(setup, mrX, detectives);
 		return new MyModel(state);
 	}
-	private final class MyModel implements Model {
+	private final static class MyModel implements Model {
 		private GameState state;
 		private Set<Observer> observers;
 
@@ -35,8 +35,7 @@ public final class MyModelFactory implements Factory<Model> {
 			}
 
 
-		@Nonnull
-		@Override
+		@Nonnull @Override
 		public Board getCurrentBoard() {
 			return state;
 		}
@@ -57,8 +56,7 @@ public final class MyModelFactory implements Factory<Model> {
 			observers.remove(observer);
 		}
 
-		@Nonnull
-		@Override
+		@Nonnull @Override
 		public ImmutableSet<Observer> getObservers() {
 			return ImmutableSet.copyOf(observers);
 		}
@@ -66,20 +64,22 @@ public final class MyModelFactory implements Factory<Model> {
 		@Override
 		public void chooseMove(Move move) {
 			if (move == null) throw new NullPointerException("Move can not be null!");
-			Observer.Event  event;
+			Observer.Event event;
 			GameState newState = state.advance(move);
 
 			if (newState.getWinner().isEmpty()) {
-				 event = Observer.Event.MOVE_MADE;
+				event = Observer.Event.MOVE_MADE;
 			}
 			else {
-				 event = Observer.Event.GAME_OVER;
+				event = Observer.Event.GAME_OVER;
 			}
 
 			for(Observer observer : observers) {
 				observer.onModelChanged(newState, event);
 			}
 
+			// Update the internal state
+			state = newState;
 		}
 	}
 }
