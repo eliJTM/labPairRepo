@@ -17,18 +17,16 @@ import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.*;
  * Stage 1: Complete this class
  */
 public final class MyGameStateFactory implements Factory<GameState> {
-	@Nonnull
-	@Override
+	@Nonnull @Override
 	public GameState build(GameSetup setup, Player mrX, ImmutableList<Player> detectives) {
 		return new MyGameState(setup, ImmutableSet.of(MrX.MRX), ImmutableList.of(), mrX, detectives);	}
 
-	private final class MyGameState implements GameState {
-		private GameSetup setup;
-		private ImmutableSet<Piece> remaining;
-		private ImmutableList<LogEntry> log;
-		private Player mrX;
-		private List<Player> detectives;
-		private ImmutableSet<Move> moves;
+	private final static class MyGameState implements GameState {
+		private final GameSetup setup;
+		private final ImmutableSet<Piece> remaining;
+		private final ImmutableList<LogEntry> log;
+		private final Player mrX;
+		private final List<Player> detectives;
 		private ImmutableSet<Piece> winner;
 
 		private MyGameState(
@@ -57,8 +55,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				if (detective == null) throw new NullPointerException("Detective in detective list cannot be null!");
 
 				// Check if there is more than one Mr X player
-				if (detective.piece().isMrX())
-					throw new IllegalArgumentException("There must be no more  than 1 Mr X player!");
+				if (detective.piece().isMrX()) throw new IllegalArgumentException("There must be no more  than 1 Mr X player!");
 
 				// Check if any detectives have double tickets
 				if (detective.has(Ticket.DOUBLE)) throw new IllegalArgumentException("Detective has double ticket.");
@@ -70,8 +67,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				if (!players.add(detective)) throw new IllegalArgumentException("There are duplicate detectives.");
 
 				// Check for duplicate detective locations - uses similar logic to above (duplicate detectives)
-				if (!detectiveLocations.add(detective.location()))
-					throw new IllegalArgumentException("There are overlapping detectives.");
+				if (!detectiveLocations.add(detective.location())) throw new IllegalArgumentException("There are overlapping detectives.");
 			}
 
 			// Check if there is no Mr X / is not defined
@@ -91,13 +87,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.winner = getWinner();
 		}
 
-		@Override
+		@Override @Nonnull
 		public GameSetup getSetup() {
 			return setup;
 		}
 
 		// Combines mrX and the list of detectives into a single immutable set
-		@Override
+		@Override @Nonnull
 		public ImmutableSet<Piece> getPlayers() {
 			Set<Piece> pieces = new HashSet<>();
 
@@ -110,7 +106,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 		// Uses logic from the implementation guide
-		@Override
+		@Override @Nonnull
 		public Optional<Integer> getDetectiveLocation(Detective detective) {
 
 			for (Player player : detectives) {
@@ -123,7 +119,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 		// Class to implement TicketBoard interface - Used in getPlayerTickets
-		private class GameStateTicketBoard implements TicketBoard {
+		private static class GameStateTicketBoard implements TicketBoard {
 			private final ImmutableMap<Ticket, Integer> tickets;
 
 			// Constructor just stores a piece's tickets
@@ -139,7 +135,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 		// Returns an object that stores a players a tickets to be read
-		@Override
+		@Override  @Nonnull
 		public Optional<TicketBoard> getPlayerTickets(Piece piece) {
 
 			// Passes Mrx's tickets through
@@ -162,14 +158,14 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return Optional.empty();
 		}
 
-		@Override
+		@Override @Nonnull
 		public ImmutableList<LogEntry> getMrXTravelLog() {
 			return log;
 		}
 
-		@Override
+		@Override @Nonnull
 		public ImmutableSet<Piece> getWinner() {
-			Set<Piece> winners = new HashSet<Piece>();
+			Set<Piece> winners = new HashSet<>();
 
 			// Odd edge cases
 
@@ -217,7 +213,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return winner;
 		}
 
-		@Override
+		@Override @Nonnull
 		public ImmutableSet<Move> getAvailableMoves() {
 			Set<Move> availableMoves = new HashSet<>();
 
@@ -234,7 +230,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 					availableMoves.addAll(makeDetectiveMoves(setup, detectives, remaining));
 				}
-
 			}
 
 			return ImmutableSet.copyOf(availableMoves);
@@ -327,12 +322,11 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return availableMoves;
 		}
 
-		@Override
+		@Override @Nonnull
 		public GameState advance(Move move) {
 			// Check for invalid move
-			if (!getAvailableMoves().contains(move)) {
-				throw new IllegalArgumentException("Illegal move: " + move);
-			}
+			if (!getAvailableMoves().contains(move)) throw new IllegalArgumentException("Illegal move: " + move);
+
 
 			return move.accept(new Move.Visitor<GameState>() {
 				@Override
