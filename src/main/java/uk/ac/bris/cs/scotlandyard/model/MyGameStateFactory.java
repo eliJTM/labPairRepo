@@ -167,13 +167,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		public ImmutableSet<Piece> getWinner() {
 			Set<Piece> winners = new HashSet<>();
 
-			// Odd edge cases
-
-
-
-
-
-
 			// When detective is on MrX
 			for (Player detective: detectives){
 				if (detective.location() == mrX.location()){
