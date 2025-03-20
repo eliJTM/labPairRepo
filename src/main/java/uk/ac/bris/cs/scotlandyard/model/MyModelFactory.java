@@ -41,17 +41,15 @@ public final class MyModelFactory implements Factory<Model> {
 		}
 
 		@Override
-		public void registerObserver(Observer observer) {
-			if(observer == null) throw new NullPointerException("Observer can not be null!");
-			if(observers.contains(observer)) throw new IllegalArgumentException("Can not register same observer twice!");
+		public void registerObserver(@Nonnull Observer observer) {
+            if(observers.contains(observer)) throw new IllegalArgumentException("Can not register same observer twice!");
 
 			observers.add(observer);
 		}
 
 		@Override
-		public void unregisterObserver(Observer observer) {
-			if(observer == null) throw new NullPointerException("Observer can not be null!");
-			if(!observers.contains(observer)) throw new IllegalArgumentException("Invalid observer!");
+		public void unregisterObserver(@Nonnull Observer observer) {
+            if(!observers.contains(observer)) throw new IllegalArgumentException("Invalid observer!");
 
 			observers.remove(observer);
 		}
@@ -62,9 +60,8 @@ public final class MyModelFactory implements Factory<Model> {
 		}
 
 		@Override
-		public void chooseMove(Move move) {
-			if (move == null) throw new NullPointerException("Move can not be null!");
-			Observer.Event event;
+		public void chooseMove(@Nonnull Move move) {
+            Observer.Event event;
 			GameState newState = state.advance(move);
 
 			if (newState.getWinner().isEmpty()) {
@@ -73,9 +70,9 @@ public final class MyModelFactory implements Factory<Model> {
 			else {
 				event = Observer.Event.GAME_OVER;
 			}
-			// Update the  state
 			state = newState;
 
+			// Notify observers of updated state
 			for(Observer observer : observers) {
 				observer.onModelChanged(newState, event);
 			}
