@@ -73,11 +73,12 @@ public final class MyModelFactory implements Factory<Model> {
 				event = Observer.Event.GAME_OVER;
 			}
 
+			state = newState;
 			// Notify observers of updated state
 			for(Observer observer : observers) {
 				observer.onModelChanged(newState, event);
 			}
-			state = newState;
+
 
 		}
 	}
