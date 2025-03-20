@@ -73,13 +73,13 @@ public final class MyModelFactory implements Factory<Model> {
 			else {
 				event = Observer.Event.GAME_OVER;
 			}
+			// Update the  state
+			state = newState;
 
 			for(Observer observer : observers) {
 				observer.onModelChanged(newState, event);
 			}
 
-			// Update the internal state
-			state = newState;
 		}
 	}
 }
