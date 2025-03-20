@@ -55,7 +55,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				if (detective == null) throw new NullPointerException("Detective in detective list cannot be null!");
 
 				// Check if there is more than one Mr X player
-				if (detective.piece().isMrX()) throw new IllegalArgumentException("There must be no more  than 1 Mr X player!");
+				if (detective.piece().isMrX()) throw new IllegalArgumentException("There must be no more than 1 Mr X player!");
 
 				// Check if any detectives have double tickets
 				if (detective.has(Ticket.DOUBLE)) throw new IllegalArgumentException("Detective has double ticket.");
@@ -202,8 +202,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 			}
 
-			winner = ImmutableSet.copyOf(winners);
-			return winner;
+			return ImmutableSet.copyOf(winners);
 		}
 
 		@Override @Nonnull
@@ -398,7 +397,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 						}
 					}
 
-					getWinner();
+					winner = getWinner();
 
 					// Return the new game state
 					return new MyGameState(setup, updatedRemaining, updatedLog, updatedMrX, updatedDetectives);
@@ -445,7 +444,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					}
 					ImmutableSet<Piece> updatedRemaining = ImmutableSet.copyOf(detectivePieces);
 
-					getWinner();
+					winner = getWinner();
 
 					// Return the new game state
 					return new MyGameState(setup, updatedRemaining, updatedLog, updatedMrX, detectives);
